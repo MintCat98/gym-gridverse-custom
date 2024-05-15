@@ -1,0 +1,28 @@
+state_space:
+  objects: [ Wall, Floor, drone_env:DeliverPoint ,drone_env:Hub]
+  colors: [ NONE, YELLOW ]
+
+observation_space:
+  objects: [ Wall, Floor, drone_env:DeliverPoint,drone_env:Hub ]
+  colors: [ NONE, YELLOW ]
+
+reset_function:
+  name: drone_env:coin_maze
+
+transition_functions:
+  - name: move_agent
+  - name: turn_agent
+  - name: drone_env:reload_items_from_Hub_transition
+  - name : drone_env:unload_transition
+
+reward_functions:
+  - name: living_reward
+    reward: -0.1
+  - name: drone_env:finish_deliver_reward
+
+observation_function:
+  name: partially_occluded
+  area: [ [ -6, 0 ], [-3, 3 ] ]
+
+terminating_function:
+  name: drone_env:no_more_Deliverys
