@@ -1,4 +1,5 @@
 """ Every cell in the grid is represented by a grid objects """
+
 from __future__ import annotations
 
 import abc
@@ -17,6 +18,7 @@ class Color(enum.Enum):
     GREEN = enum.auto()
     BLUE = enum.auto()
     YELLOW = enum.auto()
+    PURPLE = enum.auto()  # Custom color
 
 
 class GridObjectRegistry(UserList):
@@ -429,6 +431,51 @@ class Beacon(GridObject):
 
     @classmethod
     def num_states(cls) -> int:
+        return 1
+
+    def __repr__(self):
+        return f'{self.__class__.__name__}({self.color!s})'
+
+
+# Added by MintCat98
+class DeliveryAddress(GridObject):
+    """`DeliveryAddress` is an object where the agent delivers items.
+
+    The following algorithms
+    """
+
+    state_index = 0  # Starts from 0
+    color = Color.PURPLE
+    blocks_movement = False  # Because the agent must enter the building.
+    blocks_vision = True  # It is more natural I think.
+    holdable = False  # Fixed object
+    num_items = 0  # A counter for called items which will be delivered.
+
+    def __init__(self, num_items=num_items):
+        super().__init__()
+        self.num_items = num_items
+
+    @classmethod
+    def can_be_represented_in_state(cls) -> bool:
+        return True
+
+    @classmethod
+    def num_states(cls) -> int:
+        return 1
+
+    @classmethod
+    def receive_one_item(self) -> int:
+        """This method follows the below algorithm.
+        `return` values will be used in `TransitionFunction` to identify whether the agent must lift more items or not.
+
+        if `num_items` > 0 => return `1` (It means the agent must do more actions in this building.)
+
+        else => return `0` (It means the agent must leave the building.)
+        """
+        if self.num_items == 0:
+            return 0
+
+        self.num_items -= 1
         return 1
 
     def __repr__(self):
