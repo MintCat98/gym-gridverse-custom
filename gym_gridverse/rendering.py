@@ -38,7 +38,16 @@ class Group(rendering.Geom):
     def render1(self):
         for geom in self.geoms:
             geom.render()
-
+            # possible label rendering, not implemented
+            # if isinstance(geom, rendering.Geom):            
+            #     geom.render()
+            # else:
+            #     label = pyglet.text.Label(geom.text,
+            #                         font_name='Times New Roman',
+            #                         font_size=36,
+            #                         x=geom.x, y=geom.y,
+            #                         anchor_x='center', anchor_y='center')
+            #     label.draw()
 
 def make_grid(
     start: Tuple[float, float],
@@ -452,23 +461,29 @@ def make_address(destination: GridObject) -> rendering.Geom:
     num_items = destination.num_items
     pad = 0.8
     geom_destination = rendering.make_polygon(
-        [(-pad, 0),  (0, pad), (pad, 0), (-pad, -pad), (pad, -pad)],
+        [(-pad, 0),  (0, pad), (pad, 0),  (pad, -pad), (-pad, -pad)],
         filled=True
     )
     geom_destination.set_color(*colormap[destination.color])
     geom_boundary = rendering.make_polygon(
-        [(-pad, 0),  (0, pad), (pad, 0), (-pad, -pad), (pad, -pad)],
-        filled=False
-    )
-    geom_cross = rendering.make_polygon(
-        [(pad, 0), (-pad, 0)],
+        [(-pad, 0),  (0, pad), (pad, 0),  (pad, -pad), (-pad, -pad)],
         filled=False
     )
     geom_boundary.set_linewidth(2)
-    geom_cross.set_linewidth(2)
-    label = pyglet.text.Label(num_items, font_size=12, x=0, y=0, anchor_x='center', anchor_y='center')
+    # representation of pending delivery items
+    geom_package = rendering.make_circle(0.4, filled=True)
+    if num_items == 1:
+        geom_package.set_color(*GREEN)
+    elif num_items == 2:
+        geom_package.set_color(*YELLOW)
+    elif num_items == 3:
+        geom_package.set_color(*RED)
+    geom_package_boundary = rendering.make_circle(0.4, filled=False) 
+    geom_package_boundary.set_linewidth(2)
+    # label = rendering.make_Label(f'{num_items}')
+    # return Group([geom_destination, geom_boundary, label])
 
-    return Group([geom_destination, geom_boundary, geom_cross, label])
+    return Group([geom_destination, geom_boundary, geom_package, geom_package_boundary])
 
 # TODO: replace Gridobject with DeliveryHub object
 def make_hub(obj: GridObject) -> rendering.Geom:
@@ -677,6 +692,14 @@ class GridVerseViewer:
 
             elif isinstance(obj, Beacon):
                 geom = make_beacon(obj)
+                self._draw_geom_onetime(geom, position)
+
+            elif isinstance(obj, DeliveryAddress):
+                geom = make_address(obj)
+                self._draw_geom_onetime(geom, position)
+            
+            elif isinstance(obj, DeliveryHub):
+                geom = make_hub(obj)
                 self._draw_geom_onetime(geom, position)
 
             else:
