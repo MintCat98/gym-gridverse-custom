@@ -471,7 +471,9 @@ def make_address(destination: GridObject) -> rendering.Geom:
     geom_boundary.set_linewidth(2)
     # representation of pending delivery items
     geom_package = rendering.make_circle(0.4, filled=True)
-    if num_items == 1:
+    if num_items == 0:
+        geom_package.set_color(*BLUE)
+    elif num_items == 1:
         geom_package.set_color(*GREEN)
     elif num_items == 2:
         geom_package.set_color(*YELLOW)
