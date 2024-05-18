@@ -438,7 +438,6 @@ def make_package(obj: GridObject) -> rendering.Geom:
         filled=True
     )
     geom_package.set_color(*colormap[obj.color])
-    res = 100
     geom_boundary = rendering.make_polygon(
         [(-pad, -pad), (-pad*0.5, pad), (pad*0.5, pad), (pad, -pad)],
         filled=False
@@ -694,6 +693,7 @@ class GridVerseViewer:
                 geom = make_beacon(obj)
                 self._draw_geom_onetime(geom, position)
 
+            # not defined yet, but will be used in the future
             elif isinstance(obj, DeliveryAddress):
                 geom = make_address(obj)
                 self._draw_geom_onetime(geom, position)
