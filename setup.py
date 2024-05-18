@@ -12,7 +12,8 @@ with open('HISTORY.rst') as history_file:
 
 requirements = [
     'pyglet<=1.5.27',
-    'gym<=0.21.0',
+    # 'gym<=0.21.0',
+    'gym',
     'imageio',
     'imageio-ffmpeg',
     'more_itertools',
