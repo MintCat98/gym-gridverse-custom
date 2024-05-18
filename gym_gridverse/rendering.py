@@ -422,6 +422,67 @@ def make_unknown(obj: GridObject) -> rendering.Geom:
 
     return Group([geom_circle, geom_boundary, geom_diag_1, geom_diag_2])
 
+def make_package(obj: GridObject) -> rendering.Geom:
+    pad = 0.8
+    geom_package = rendering.make_polygon(
+        [(-pad, -pad), (-pad*0.5, pad), (pad*0.5, pad), (pad, -pad)],
+        filled=True
+    )
+    geom_package.set_color(*colormap[obj.color])
+    res = 100
+    geom_boundary = rendering.make_polygon(
+        [(-pad, -pad), (-pad*0.5, pad), (pad*0.5, pad), (pad, -pad)],
+        filled=False
+    )
+    geom_boundary.set_linewidth(2)
+
+    geom_cross_1 = rendering.make_polygon(
+        [(0.4, -0.4), (-0.4, 0.4)], filled=False
+    )
+    geom_cross_1.set_linewidth(2)
+    geom_cross_2 = rendering.make_polygon(
+        [(0.4, 0.4), (-0.4, -0.4)], filled=False
+    )
+    geom_cross_2.set_linewidth(2)
+
+    return Group([geom_package, geom_boundary, geom_cross_1, geom_cross_2])
+
+def make_address(obj: GridObject) -> rendering.Geom:
+    pad = 0.8
+    geom_destination = rendering.make_polygon(
+        [(-pad, 0),  (0, pad), (pad, 0), (-pad, -pad), (pad, -pad)],
+        filled=True
+    )
+    geom_destination.set_color(*colormap[obj.color])
+    geom_boundary = rendering.make_polygon(
+        [(-pad, 0),  (0, pad), (pad, 0), (-pad, -pad), (pad, -pad)],
+        filled=False
+    )
+    geom_cross = rendering.make_polygon(
+        [(pad, 0), (-pad, 0)],
+        filled=False
+    )
+    geom_boundary.set_linewidth(2)
+    geom_cross.set_linewidth(2)
+
+    return Group([geom_destination, geom_boundary, geom_cross])
+
+# TODO: replace Gridobject with DeliveryHub object
+def make_hub(obj: GridObject) -> rendering.Geom:
+    r = 0.4
+    smallpad = 0.5
+    hub_coords = [(r * math.cos(math.pi/180 * 60 * i), r * math.sin(math.pi/180 * 60 * i)) for i in range(6)]
+    geom_hub = rendering.make_polygon(hub_coords, filled=True)
+    geom_hub.set_color(*colormap[obj.color])
+    geom_boundary = rendering.make_polygon(hub_coords, filled=False)
+
+    geom_package = rendering.make_polygon(
+        [(-smallpad, -smallpad), (-smallpad*0.5, smallpad), (smallpad*0.5, smallpad), (smallpad, -smallpad)],
+        filled = False
+    )
+    geom_boundary.set_linewidth(2)
+    geom_package.set_linewidth(2)
+    return Group([geom_hub, geom_boundary, geom_package])
 
 def convert_pos(position: Position, *, num_rows: int) -> Tuple[float, float]:
     return 2 * position.x, 2 * (num_rows - 1 - position.y)
