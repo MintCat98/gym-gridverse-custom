@@ -447,13 +447,15 @@ def make_package(obj: GridObject) -> rendering.Geom:
 
     return Group([geom_package, geom_boundary, geom_cross_1, geom_cross_2])
 
-def make_address(obj: GridObject) -> rendering.Geom:
+# TODO: replace Gridobject with DeliveryAddress object
+def make_address(destination: GridObject) -> rendering.Geom:
+    num_items = destination.num_items
     pad = 0.8
     geom_destination = rendering.make_polygon(
         [(-pad, 0),  (0, pad), (pad, 0), (-pad, -pad), (pad, -pad)],
         filled=True
     )
-    geom_destination.set_color(*colormap[obj.color])
+    geom_destination.set_color(*colormap[destination.color])
     geom_boundary = rendering.make_polygon(
         [(-pad, 0),  (0, pad), (pad, 0), (-pad, -pad), (pad, -pad)],
         filled=False
@@ -464,8 +466,9 @@ def make_address(obj: GridObject) -> rendering.Geom:
     )
     geom_boundary.set_linewidth(2)
     geom_cross.set_linewidth(2)
+    label = pyglet.text.Label(num_items, font_size=12, x=0, y=0, anchor_x='center', anchor_y='center')
 
-    return Group([geom_destination, geom_boundary, geom_cross])
+    return Group([geom_destination, geom_boundary, geom_cross, label])
 
 # TODO: replace Gridobject with DeliveryHub object
 def make_hub(obj: GridObject) -> rendering.Geom:
