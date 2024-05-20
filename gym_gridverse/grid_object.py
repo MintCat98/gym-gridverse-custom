@@ -508,7 +508,7 @@ class DeliveryHub(GridObject):
 
     @classmethod
     def num_states(cls) -> int:
-        return len(Hub.Status)
+        return len(DeliveryHub.Status)
 
     @classmethod
     def state_index(self) -> int:
@@ -516,11 +516,11 @@ class DeliveryHub(GridObject):
 
     @classmethod
     def is_open(self) -> bool:
-        return self.state is Hub.Status.OPEN
+        return self.state is DeliveryHub.Status.OPEN
 
     @classmethod
     def is_closed(self) -> bool:
-        return self.state is Hub.Status.CLOSED
+        return self.state is DeliveryHub.Status.CLOSED
 
     @classmethod
     def set_closed(self):
