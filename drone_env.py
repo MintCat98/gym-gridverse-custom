@@ -14,69 +14,18 @@ from gym_gridverse.envs.terminating_functions import (
 from gym_gridverse.envs.transition_functions import transition_function_registry
 from gym_gridverse.geometry import Area, Orientation
 from gym_gridverse.grid import Grid
-from gym_gridverse.grid_object import Color, Floor, GridObject, Wall
+from gym_gridverse.grid_object import (
+    Color,
+    Floor,
+    GridObject,
+    Wall,
+    DeliveryAddress,
+    DeliveryHub,
+)
 from gym_gridverse.rng import choice, get_gv_rng_if_none
 from gym_gridverse.state import State
 
 
-class DeliverPoint(GridObject):
-    state_index = 0
-    color = Color.NONE
-    blocks_movement = False
-    blocks_vision = False
-    holdable = True
-
-    @classmethod
-    def can_be_represented_in_state(cls) -> bool:
-        return True
-
-    @classmethod
-    def num_states(cls) -> int:
-        return 1
-
-    def __repr__(self):
-        return f'{self.__class__.__name__}()'
-
-class Hub(GridObject):
-    color = Color.YELLOW
-    blocks_movement = False
-    blocks_vision = False
-    holdable = False
-    item_num = 5
-
-    class Status(enum.Enum):
-        OPEN = 0
-        CLOSED = 1
-
-    def __init__(self):
-        self.state = self.Status.OPEN
-
-    @classmethod
-    def can_be_represented_in_state(cls) -> bool:
-        return True
-
-    @classmethod
-    def num_states(cls) -> int:
-        return len(Hub.Status)
-    
-    @property
-    def state_index(self) -> int:
-        return self.state.value
-        
-    @property
-    def is_open(self) -> bool:
-        return self.state is Hub.Status.OPEN
-
-    @property
-    def is_closed(self) -> bool:
-        return self.state is Hub.Status.CLOSED
-    
-    def set_closed(self):
-        self.state = self.Status.CLOSED
-
-    def __repr__(self):
-        return f'{self.__class__.__name__}({self.state!s})'
-    
 @reset_function_registry.register
 def coin_maze(*, rng: Optional[rnd.Generator] = None) -> State:
     """creates a maze with collectible coins"""
@@ -85,14 +34,14 @@ def coin_maze(*, rng: Optional[rnd.Generator] = None) -> State:
     rng = get_gv_rng_if_none(rng)
 
     # initializes grid with Coin
-    grid = Grid.from_shape((7, 9), factory=DeliverPoint)
+    grid = Grid.from_shape((7, 9), factory=DeliveryAddress)
     # assigns Wall to the border
     draw_wall_boundary(grid)
     # draw other walls
-    draw_room(grid, Area((2, 4), (2, 6)), Hub)
+    draw_room(grid, Area((2, 4), (2, 6)), DeliveryHub)
     # re-assign openings
-    #grid[2, 3] = Floor()
-    #grid[4, 5] = Coin()
+    # grid[2, 3] = Floor()
+    # grid[4, 5] = Coin()
 
     # final result (#=Wall, .=Coin):
 
@@ -110,7 +59,7 @@ def coin_maze(*, rng: Optional[rnd.Generator] = None) -> State:
         [
             position
             for position in grid.area.positions()
-            if isinstance(grid[position], DeliverPoint)
+            if isinstance(grid[position], DeliveryAddress)
         ],
     )
     agent_orientation = choice(rng, list(Orientation))
@@ -123,29 +72,33 @@ def coin_maze(*, rng: Optional[rnd.Generator] = None) -> State:
 
 
 @transition_function_registry.register
-def reload_items_from_Hub_transition( #reload
+def reload_items_from_Hub_transition(  # reload
     state: State,
     action: Action,
     *,
     rng: Optional[rnd.Generator] = None,
 ):
     """if drone has enough capacity, then drone reload items from Hub"""
-    if isinstance(state.grid[state.agent.position], Hub):
-        if state.grid[state.agent.position].state_index == 0 and ( state.agent.capacity + Hub.item_num <= state.agent.max_capacity ): # OPEN
-            state.agent.capacity += Hub.item_num
-            state.grid[state.agent.position].set_closed() 
+    if isinstance(state.grid[state.agent.position], DeliveryHub):
+        if state.grid[state.agent.position].state_index == 0 and (
+            state.agent.capacity + DeliveryHub.item_num
+            <= state.agent.max_capacity
+        ):  # OPEN
+            state.agent.capacity += DeliveryHub.item_num
+            state.grid[state.agent.position].set_closed()
         print(state.agent.capacity)
 
+
 @transition_function_registry.register
-def unload_transition( #unload
+def unload_transition(  # unload
     state: State,
     action: Action,
     *,
     rng: Optional[rnd.Generator] = None,
 ):
     """if drone has items, then drone unload items to Deliver Point"""
-    if isinstance(state.grid[state.agent.position], DeliverPoint):
-        if state.agent.capacity > 0 : 
+    if isinstance(state.grid[state.agent.position], DeliveryAddress):
+        if state.agent.capacity > 0:
             state.grid[state.agent.position] = Floor()
             state.agent.capacity -= 1
         print(state.agent.capacity)
@@ -163,7 +116,7 @@ def finish_deliver_reward(
     """gives reward if a delivery is correctly"""
     return (
         reward
-        if isinstance(state.grid[next_state.agent.position], DeliverPoint)
+        if isinstance(state.grid[next_state.agent.position], DeliveryAddress)
         else 0.0
     )
 
@@ -178,6 +131,6 @@ def no_more_Deliverys(
 ):
     """terminates episodes if all coins are collected"""
     return not any(
-        isinstance(next_state.grid[position], DeliverPoint)
+        isinstance(next_state.grid[position], DeliveryAddress)
         for position in next_state.grid.area.positions()
     )

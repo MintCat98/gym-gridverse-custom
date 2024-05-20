@@ -445,7 +445,7 @@ class DeliveryAddress(GridObject):
     """
 
     state_index = 0  # Starts from 0
-    color = Color.PURPLE
+    color = Color.NONE
     blocks_movement = False  # Because the agent must enter the building.
     blocks_vision = True  # It is more natural I think.
     holdable = False  # Fixed object
@@ -453,6 +453,12 @@ class DeliveryAddress(GridObject):
 
     def __init__(self, num_items=num_items):
         super().__init__()
+        if num_items > 4:
+            print("The max capacity is 3!!! 'num_items' is forcibly set as 3.")
+            self.num_items = 3
+        elif num_items < 1:
+            print("The min capacity is 1!!! 'num_items' is forcibly set as 1.")
+            self.num_items = 1
         self.num_items = num_items
 
     @classmethod
@@ -480,6 +486,48 @@ class DeliveryAddress(GridObject):
 
     def __repr__(self):
         return f'{self.__class__.__name__}({self.color!s})'
+
+
+class DeliveryHub(GridObject):
+    color = Color.YELLOW
+    blocks_movement = False
+    blocks_vision = False
+    holdable = False
+    item_num = 5
+
+    class Status(enum.Enum):
+        OPEN = 0
+        CLOSED = 1
+
+    def __init__(self):
+        self.state = self.Status.OPEN
+
+    @classmethod
+    def can_be_represented_in_state(cls) -> bool:
+        return True
+
+    @classmethod
+    def num_states(cls) -> int:
+        return len(Hub.Status)
+
+    @classmethod
+    def state_index(self) -> int:
+        return self.state.value
+
+    @classmethod
+    def is_open(self) -> bool:
+        return self.state is Hub.Status.OPEN
+
+    @classmethod
+    def is_closed(self) -> bool:
+        return self.state is Hub.Status.CLOSED
+
+    @classmethod
+    def set_closed(self):
+        self.state = self.Status.CLOSED
+
+    def __repr__(self):
+        return f'{self.__class__.__name__}({self.state!s})'
 
 
 GridObjectFactory: TypeAlias = Callable[[], GridObject]

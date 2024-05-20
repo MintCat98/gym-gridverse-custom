@@ -1,9 +1,9 @@
 state_space:
-  objects: [ Wall, Floor, drone_env:DeliverPoint ,drone_env:Hub]
+  objects: [ Wall, Floor, drone_env:DeliveryAddress , drone_env:DeliveryHub]
   colors: [ NONE, YELLOW ]
 
 observation_space:
-  objects: [ Wall, Floor, drone_env:DeliverPoint,drone_env:Hub ]
+  objects: [ Wall, Floor, drone_env:DeliveryAddress, drone_env:DeliveryHub ]
   colors: [ NONE, YELLOW ]
 
 reset_function:

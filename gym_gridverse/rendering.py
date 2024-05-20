@@ -23,6 +23,8 @@ from gym_gridverse.grid_object import (
     MovingObstacle,
     Telepod,
     Wall,
+    DeliveryAddress,
+    DeliveryHub,
 )
 from gym_gridverse.observation import Observation
 from gym_gridverse.state import State
@@ -39,7 +41,7 @@ class Group(rendering.Geom):
         for geom in self.geoms:
             geom.render()
             # possible label rendering, not implemented
-            # if isinstance(geom, rendering.Geom):            
+            # if isinstance(geom, rendering.Geom):
             #     geom.render()
             # else:
             #     label = pyglet.text.Label(geom.text,
@@ -48,6 +50,7 @@ class Group(rendering.Geom):
             #                         x=geom.x, y=geom.y,
             #                         anchor_x='center', anchor_y='center')
             #     label.draw()
+
 
 def make_grid(
     start: Tuple[float, float],
@@ -266,9 +269,11 @@ def make_door(door: Door) -> rendering.Geom:
     return (
         _make_door_open(door)
         if door.is_open
-        else _make_door_closed_locked(door)
-        if door.is_locked
-        else _make_door_closed_unlocked(door)
+        else (
+            _make_door_closed_locked(door)
+            if door.is_locked
+            else _make_door_closed_unlocked(door)
+        )
     )
 
 
@@ -431,16 +436,17 @@ def make_unknown(obj: GridObject) -> rendering.Geom:
 
     return Group([geom_circle, geom_boundary, geom_diag_1, geom_diag_2])
 
+
 def make_package(obj: GridObject) -> rendering.Geom:
     pad = 0.8
     geom_package = rendering.make_polygon(
-        [(-pad, -pad), (-pad*0.5, pad), (pad*0.5, pad), (pad, -pad)],
-        filled=True
+        [(-pad, -pad), (-pad * 0.5, pad), (pad * 0.5, pad), (pad, -pad)],
+        filled=True,
     )
     geom_package.set_color(*colormap[obj.color])
     geom_boundary = rendering.make_polygon(
-        [(-pad, -pad), (-pad*0.5, pad), (pad*0.5, pad), (pad, -pad)],
-        filled=False
+        [(-pad, -pad), (-pad * 0.5, pad), (pad * 0.5, pad), (pad, -pad)],
+        filled=False,
     )
     geom_boundary.set_linewidth(2)
 
@@ -455,18 +461,17 @@ def make_package(obj: GridObject) -> rendering.Geom:
 
     return Group([geom_package, geom_boundary, geom_cross_1, geom_cross_2])
 
+
 # TODO: replace Gridobject with DeliveryAddress object
 def make_address(destination: GridObject) -> rendering.Geom:
     num_items = destination.num_items
     pad = 0.8
     geom_destination = rendering.make_polygon(
-        [(-pad, 0),  (0, pad), (pad, 0),  (pad, -pad), (-pad, -pad)],
-        filled=True
+        [(-pad, 0), (0, pad), (pad, 0), (pad, -pad), (-pad, -pad)], filled=True
     )
     geom_destination.set_color(*colormap[destination.color])
     geom_boundary = rendering.make_polygon(
-        [(-pad, 0),  (0, pad), (pad, 0),  (pad, -pad), (-pad, -pad)],
-        filled=False
+        [(-pad, 0), (0, pad), (pad, 0), (pad, -pad), (-pad, -pad)], filled=False
     )
     geom_boundary.set_linewidth(2)
     # representation of pending delivery items
@@ -479,29 +484,44 @@ def make_address(destination: GridObject) -> rendering.Geom:
         geom_package.set_color(*YELLOW)
     elif num_items == 3:
         geom_package.set_color(*RED)
-    geom_package_boundary = rendering.make_circle(0.4, filled=False) 
+    geom_package_boundary = rendering.make_circle(0.4, filled=False)
     geom_package_boundary.set_linewidth(2)
     # label = rendering.make_Label(f'{num_items}')
     # return Group([geom_destination, geom_boundary, label])
 
-    return Group([geom_destination, geom_boundary, geom_package, geom_package_boundary])
+    return Group(
+        [geom_destination, geom_boundary, geom_package, geom_package_boundary]
+    )
+
 
 # TODO: replace Gridobject with DeliveryHub object
 def make_hub(obj: GridObject) -> rendering.Geom:
     r = 0.4
     smallpad = 0.5
-    hub_coords = [(r * math.cos(math.pi/180 * 60 * i), r * math.sin(math.pi/180 * 60 * i)) for i in range(6)]
+    hub_coords = [
+        (
+            r * math.cos(math.pi / 180 * 60 * i),
+            r * math.sin(math.pi / 180 * 60 * i),
+        )
+        for i in range(6)
+    ]
     geom_hub = rendering.make_polygon(hub_coords, filled=True)
     geom_hub.set_color(*colormap[obj.color])
     geom_boundary = rendering.make_polygon(hub_coords, filled=False)
 
     geom_package = rendering.make_polygon(
-        [(-smallpad, -smallpad), (-smallpad*0.5, smallpad), (smallpad*0.5, smallpad), (smallpad, -smallpad)],
-        filled = False
+        [
+            (-smallpad, -smallpad),
+            (-smallpad * 0.5, smallpad),
+            (smallpad * 0.5, smallpad),
+            (smallpad, -smallpad),
+        ],
+        filled=False,
     )
     geom_boundary.set_linewidth(2)
     geom_package.set_linewidth(2)
     return Group([geom_hub, geom_boundary, geom_package])
+
 
 def convert_pos(position: Position, *, num_rows: int) -> Tuple[float, float]:
     return 2 * position.x, 2 * (num_rows - 1 - position.y)
@@ -699,7 +719,7 @@ class GridVerseViewer:
             elif isinstance(obj, DeliveryAddress):
                 geom = make_address(obj)
                 self._draw_geom_onetime(geom, position)
-            
+
             elif isinstance(obj, DeliveryHub):
                 geom = make_hub(obj)
                 self._draw_geom_onetime(geom, position)
