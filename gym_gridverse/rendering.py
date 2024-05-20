@@ -38,7 +38,16 @@ class Group(rendering.Geom):
     def render1(self):
         for geom in self.geoms:
             geom.render()
-
+            # possible label rendering, not implemented
+            # if isinstance(geom, rendering.Geom):            
+            #     geom.render()
+            # else:
+            #     label = pyglet.text.Label(geom.text,
+            #                         font_name='Times New Roman',
+            #                         font_size=36,
+            #                         x=geom.x, y=geom.y,
+            #                         anchor_x='center', anchor_y='center')
+            #     label.draw()
 
 def make_grid(
     start: Tuple[float, float],
@@ -422,6 +431,77 @@ def make_unknown(obj: GridObject) -> rendering.Geom:
 
     return Group([geom_circle, geom_boundary, geom_diag_1, geom_diag_2])
 
+def make_package(obj: GridObject) -> rendering.Geom:
+    pad = 0.8
+    geom_package = rendering.make_polygon(
+        [(-pad, -pad), (-pad*0.5, pad), (pad*0.5, pad), (pad, -pad)],
+        filled=True
+    )
+    geom_package.set_color(*colormap[obj.color])
+    geom_boundary = rendering.make_polygon(
+        [(-pad, -pad), (-pad*0.5, pad), (pad*0.5, pad), (pad, -pad)],
+        filled=False
+    )
+    geom_boundary.set_linewidth(2)
+
+    geom_cross_1 = rendering.make_polygon(
+        [(0.4, -0.4), (-0.4, 0.4)], filled=False
+    )
+    geom_cross_1.set_linewidth(2)
+    geom_cross_2 = rendering.make_polygon(
+        [(0.4, 0.4), (-0.4, -0.4)], filled=False
+    )
+    geom_cross_2.set_linewidth(2)
+
+    return Group([geom_package, geom_boundary, geom_cross_1, geom_cross_2])
+
+# TODO: replace Gridobject with DeliveryAddress object
+def make_address(destination: GridObject) -> rendering.Geom:
+    num_items = destination.num_items
+    pad = 0.8
+    geom_destination = rendering.make_polygon(
+        [(-pad, 0),  (0, pad), (pad, 0),  (pad, -pad), (-pad, -pad)],
+        filled=True
+    )
+    geom_destination.set_color(*colormap[destination.color])
+    geom_boundary = rendering.make_polygon(
+        [(-pad, 0),  (0, pad), (pad, 0),  (pad, -pad), (-pad, -pad)],
+        filled=False
+    )
+    geom_boundary.set_linewidth(2)
+    # representation of pending delivery items
+    geom_package = rendering.make_circle(0.4, filled=True)
+    if num_items == 0:
+        geom_package.set_color(*BLUE)
+    elif num_items == 1:
+        geom_package.set_color(*GREEN)
+    elif num_items == 2:
+        geom_package.set_color(*YELLOW)
+    elif num_items == 3:
+        geom_package.set_color(*RED)
+    geom_package_boundary = rendering.make_circle(0.4, filled=False) 
+    geom_package_boundary.set_linewidth(2)
+    # label = rendering.make_Label(f'{num_items}')
+    # return Group([geom_destination, geom_boundary, label])
+
+    return Group([geom_destination, geom_boundary, geom_package, geom_package_boundary])
+
+# TODO: replace Gridobject with DeliveryHub object
+def make_hub(obj: GridObject) -> rendering.Geom:
+    r = 0.4
+    smallpad = 0.5
+    hub_coords = [(r * math.cos(math.pi/180 * 60 * i), r * math.sin(math.pi/180 * 60 * i)) for i in range(6)]
+    geom_hub = rendering.make_polygon(hub_coords, filled=True)
+    geom_hub.set_color(*colormap[obj.color])
+    geom_boundary = rendering.make_polygon(hub_coords, filled=False)
+
+    geom_package = rendering.make_polygon(
+        [(-smallpad, -smallpad), (-smallpad*0.5, smallpad), (smallpad*0.5, smallpad), (smallpad, -smallpad)],
+        filled = False
+    )
+    geom_boundary.set_linewidth(2)
+    geom_package.set_linewidth(2)
+    return Group([geom_hub, geom_boundary, geom_package])
 
 def convert_pos(position: Position, *, num_rows: int) -> Tuple[float, float]:
     return 2 * position.x, 2 * (num_rows - 1 - position.y)
@@ -613,6 +693,15 @@ class GridVerseViewer:
 
             elif isinstance(obj, Beacon):
                 geom = make_beacon(obj)
+                self._draw_geom_onetime(geom, position)
+
+            # not defined yet, but will be used in the future
+            elif isinstance(obj, DeliveryAddress):
+                geom = make_address(obj)
+                self._draw_geom_onetime(geom, position)
+            
+            elif isinstance(obj, DeliveryHub):
+                geom = make_hub(obj)
                 self._draw_geom_onetime(geom, position)
 
             else:

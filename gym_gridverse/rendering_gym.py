@@ -385,7 +385,18 @@ class Image(Geom):
             height=self.height,
         )
 
-
+# Label representation, not implemented
+class Label(object):
+    def __init__(self, text, x, y, font_size=12, color=(0, 0, 0)):
+        self.text = text
+        self.x = x
+        self.y = y
+        self.font_size = font_size
+        self.color = color
+    
+    
+def make_label(text, x, y, font_size=12, color=(0, 0, 0)):
+    return Label(text, x, y, font_size, color)
 # ================================================================
 
 
