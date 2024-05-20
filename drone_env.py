@@ -85,7 +85,7 @@ def reload_items_from_Hub_transition(  # reload
             <= state.agent.max_capacity
         ):  # OPEN
             state.agent.capacity += DeliveryHub.item_num
-            state.grid[state.agent.position].set_closed()
+            state.grid[state.agent.position].state_index = 1
         print(state.agent.capacity)
 
 

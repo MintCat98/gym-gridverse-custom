@@ -494,13 +494,10 @@ class DeliveryHub(GridObject):
     blocks_vision = False
     holdable = False
     item_num = 5
-
-    class Status(enum.Enum):
-        OPEN = 0
-        CLOSED = 1
+    state_index = 0 # OPEN
 
     def __init__(self):
-        self.state = self.Status.OPEN
+        self.state_index = 0
 
     @classmethod
     def can_be_represented_in_state(cls) -> bool:
@@ -511,20 +508,16 @@ class DeliveryHub(GridObject):
         return len(DeliveryHub.Status)
 
     @classmethod
-    def state_index(self) -> int:
-        return self.state.value
-
-    @classmethod
     def is_open(self) -> bool:
-        return self.state is DeliveryHub.Status.OPEN
+        return self.state == 0
 
     @classmethod
     def is_closed(self) -> bool:
-        return self.state is DeliveryHub.Status.CLOSED
+        return self.state == 1
 
     @classmethod
     def set_closed(self):
-        self.state = self.Status.CLOSED
+        self.state_index = 1 #CLOSE
 
     def __repr__(self):
         return f'{self.__class__.__name__}({self.state!s})'
