@@ -129,15 +129,18 @@ def finish_deliver_reward(
     rng: Optional[rnd.Generator] = None,
 ):
     """gives reward if a delivery is correctly"""   
-    print("finish_deliver reward : ")
-    print(reward
-        if isinstance(state.grid[next_state.agent.position], DeliveryAddress)
-        else 0.0)
-    return (
-        reward
-        if isinstance(state.grid[next_state.agent.position], DeliveryAddress)
-        else 0.0
-    )
+    if isinstance(state.grid[next_state.agent.position], DeliveryAddress) :
+        DeliverAdd = state.grid[next_state.agent.position]
+        if (DeliverAdd.is_empty != True) and state.agent.capacity > 0:
+            reward = 1.0
+        else :
+            reward = 0
+    else :
+        reward = 0
+    print(f"finish_deliver reward : {reward}")
+ 
+    return reward
+    
 
 @reward_function_registry.register
 def holding_penalty(
