@@ -21,6 +21,8 @@ class Agent:
         grid_object: Optional[GridObject] = None,
         capacity : int = 0, #default capacity is 0, drone need to reload items from Hub
         max_capacity : int = 10, # max capacity that drone can deliver
+        finished_deliver_num : int = 0,
+
     ):
         """Creates the agent at `position` with `orientation` and holding `grid_object`.
 
@@ -36,6 +38,7 @@ class Agent:
         )
         self.capacity = capacity
         self.max_capacity = max_capacity
+        self.finished_deliver_num = finished_deliver_num
 
     def front(self) -> Position:
         return self.transform * Position.from_orientation(Orientation.F)

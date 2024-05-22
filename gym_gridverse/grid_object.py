@@ -124,7 +124,7 @@ class GridObject(metaclass=GridObjectMeta):
         number of possible states that this GridObject may have.
         """
         assert False
-
+    
     def __eq__(self, other) -> bool:
         if not isinstance(other, GridObject):
             return NotImplemented
@@ -468,7 +468,6 @@ class DeliveryAddress(GridObject):
     @classmethod
     def num_states(cls) -> int:
         return 1
-
     @classmethod
     def receive_one_item(self) -> int:
         """This method follows the below algorithm.
@@ -483,7 +482,13 @@ class DeliveryAddress(GridObject):
 
         self.num_items -= 1
         return 1
-
+    
+    @property
+    def is_empty(self) -> bool :
+        if self.num_items == 0 :
+            return True
+        else :
+            return False 
     def __repr__(self):
         return f'{self.__class__.__name__}({self.color!s})'
 
@@ -493,8 +498,11 @@ class DeliveryHub(GridObject):
     blocks_movement = False
     blocks_vision = False
     holdable = False
+
+    target_num = 11
     item_num = 11
     state_index = 0  # OPEN
+    is_rewarded = False
 
     def __init__(self, num_items=item_num):
         self.state_index = 0
@@ -505,7 +513,14 @@ class DeliveryHub(GridObject):
 
     @classmethod
     def num_states(cls) -> int:
-        return len(DeliveryHub.Status)
+        return 2
+    
+    @property
+    def is_empty(self) -> bool :
+        if self.item_num == 0 :
+            return True
+        else :
+            return False 
 
     def __repr__(self):
         return f'{self.__class__.__name__}({self.state!s})'

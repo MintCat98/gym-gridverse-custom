@@ -41,11 +41,11 @@ def coin_maze(*, rng: Optional[rnd.Generator] = None) -> State:
     #draw_room(grid, Area((2, 4), (2, 6)), DeliveryHub)
     # re-assign openings
     grid[2, 3] = DeliveryHub()
-    grid[5, 4] = DeliveryAddress()
-    grid[3, 4] = DeliveryAddress()
-    grid[3, 5] = DeliveryAddress()
-    grid[3, 6] = DeliveryAddress()
-    grid[3, 7] = DeliveryAddress()
+    grid[5, 4] = DeliveryAddress(3)
+    grid[3, 4] = DeliveryAddress(3)
+    grid[3, 5] = DeliveryAddress(2)
+    grid[3, 6] = DeliveryAddress(2)
+    grid[3, 7] = DeliveryAddress(1)
     #grid[3, 8] = DeliveryAddress()
 
     # final result (#=Wall, .=Coin):
@@ -85,13 +85,19 @@ def reload_items_from_Hub_transition(  # reload
 ):
     """if drone has enough capacity, then drone reload items from Hub"""
     if isinstance(state.grid[state.agent.position], DeliveryHub):
-        if state.grid[state.agent.position].state_index == 0 and (
-            state.agent.capacity + DeliveryHub.item_num
-            <= state.agent.max_capacity
-        ):  # OPEN
-            state.agent.capacity += DeliveryHub.item_num
-            state.grid[state.agent.position].state_index = 1
-        print(state.agent.capacity)
+        Hub = state.grid[state.agent.position] 
+        if state.grid[state.agent.position].state_index == 0 and (Hub.is_empty == False):  # OPEN
+            if state.agent.max_capacity > state.agent.capacity :
+                state.agent.capacity += 1
+                Hub.item_num -= 1
+        #print(f'drone capacity after reload : {state.agent.capacity}')
+
+        if Hub.is_empty :
+            Hub.state_index = 1
+            #print(f'Hub is empty')
+
+        
+
 
 
 @transition_function_registry.register
@@ -101,12 +107,16 @@ def unload_transition(  # unload
     *,
     rng: Optional[rnd.Generator] = None,
 ):
-    """if drone has items, then drone unload items to Deliver Point"""
+    """if drone has items, deliveryAddress has req items, then drone unload one item to DeliverAddress"""
     if isinstance(state.grid[state.agent.position], DeliveryAddress):
-        if state.agent.capacity > 0:
-            state.grid[state.agent.position] = Floor()
+        delivery_address = state.grid[state.agent.position] 
+        if state.agent.capacity > 0 and delivery_address.is_empty == False:
+            #print(f'delivery before : {delivery_address.num_items}')
+            delivery_address.num_items -= 1
+            state.agent.finished_deliver_num += 1
             state.agent.capacity -= 1
-        print(state.agent.capacity)
+            #print(f'delivery after : {delivery_address.num_items}')
+        print(f'drone capacity after unload : {state.agent.capacity}')
 
 
 @reward_function_registry.register
@@ -159,16 +169,19 @@ def Hub_item_empty_reward(
     rng: Optional[rnd.Generator] = None,
 ):
     """gives reward if hub is empty (== agent reload all itmes in Hub)"""
-    if all(next_state.grid[next_state.agent.position].state_index == 1 for position in next_state.grid.area.positions()) :
-        next_state.grid[next_state.agent.position].state_index = 2
+    if isinstance(next_state.grid[next_state.agent.position],DeliveryHub) :
+        Hub = next_state.grid[next_state.agent.position]
+        if (Hub.is_empty == True) and (Hub.is_rewarded == False):
+            reward = 5
+            Hub.is_rewarded = True
+        else :
+            reward = 0
     else :
         reward = 0
     print("Hub_item_empty_reward : ")
-    print(reward
-)
-    return (
-        reward
-    )
+    print(reward)
+    return reward
+    
 
 @reward_function_registry.register
 def terminating_reward(
@@ -182,11 +195,11 @@ def terminating_reward(
     """gives reward if all delivery is finish """
     print("terminating_reward : ")
     print(reward
-        if not any(isinstance(next_state.grid[position], DeliveryAddress) for position in next_state.grid.area.positions())
+        if DeliveryHub.target_num == next_state.agent.finished_deliver_num
         else 0.0)
     return (
         reward
-        if not any(isinstance(next_state.grid[position], DeliveryAddress) for position in next_state.grid.area.positions())
+        if DeliveryHub.target_num == next_state.agent.finished_deliver_num
         else 0.0
     )
 
@@ -199,7 +212,5 @@ def no_more_Deliverys(
     rng: Optional[rnd.Generator] = None,
 ):
     """terminates episodes if all coins are collected"""
-    return not any(
-        isinstance(next_state.grid[position], DeliveryAddress)
-        for position in next_state.grid.area.positions()
-    )
+    return DeliveryHub.target_num == next_state.agent.finished_deliver_num
+    
