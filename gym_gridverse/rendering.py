@@ -22,10 +22,9 @@ from gym_gridverse.grid_object import (
     Key,
     MovingObstacle,
     Telepod,
-    Wall,
-    DeliveryAddress,
-    DeliveryHub,
+    Wall
 )
+from drone_env import DeliveryAddress, DeliveryHub
 from gym_gridverse.observation import Observation
 from gym_gridverse.state import State
 
