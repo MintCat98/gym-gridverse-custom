@@ -505,7 +505,7 @@ class DeliveryHub(GridObject):
 
     @classmethod
     def num_states(cls) -> int:
-        return len(DeliveryHub.Status)
+        return 3 # 0 : has item, 1 : none_item but not get reward, 2 : none_item but get reward
     '''
     @classmethod
     def is_open(self) -> bool:
