@@ -30,6 +30,8 @@ from gym_gridverse.grid_object import (
     MovingObstacle,
     Telepod,
     Wall,
+    DeliveryAddress,
+    DeliveryHub,
 )
 from gym_gridverse.rng import choice, choices, get_gv_rng_if_none, shuffle
 from gym_gridverse.state import State
@@ -42,8 +44,7 @@ from gym_gridverse.utils.registry import FunctionRegistry
 class ResetFunction(Protocol):
     """Signature that all reset functions must follow"""
 
-    def __call__(self, *, rng: Optional[rnd.Generator] = None) -> State:
-        ...
+    def __call__(self, *, rng: Optional[rnd.Generator] = None) -> State: ...
 
 
 class ResetFunctionRegistry(FunctionRegistry):
@@ -620,3 +621,70 @@ def factory(name: str, **kwargs) -> ResetFunction:
     checkraise_kwargs(kwargs, required_keys)
     kwargs = select_kwargs(kwargs, required_keys + optional_keys)
     return partial(function, **kwargs)
+
+
+@reset_function_registry.register
+def delivery_town(
+    shape: Shape, *, rng: Optional[rnd.Generator] = None
+) -> State:
+    """An environment for drone delivery env
+
+    Args:
+        shape (`Shape`):
+        rng: (`Generator, optional`)
+
+    Returns:
+        State:
+    """
+
+    """
+    [Coordinate system]
+    (0,0) -> +x
+     |
+     +y
+    """
+
+    rng = get_gv_rng_if_none(rng)
+
+    if shape.height < 3 or shape.width < 5 or shape == Shape(3, 5):
+        raise ValueError(f'Shape must larger than (3, 5), given {shape}')
+
+    # Generate Boundaries
+    grid = Grid.from_shape((shape.height, shape.width))
+    draw_wall_boundary(grid)
+
+    # Generate a Path with Walls
+    grid[2, 2] = Wall()
+    grid[2, 3] = Wall()
+    grid[3, 3] = Wall()
+    grid[4, 3] = Wall()
+    grid[4, 4] = Wall()
+
+    grid[6, 4] = Wall()
+    grid[7, 4] = Wall()
+
+    grid[1, 6] = Wall()
+    grid[1, 7] = Wall()
+    grid[2, 6] = Wall()
+
+    grid[4, 6] = Wall()
+
+    grid[6, 6] = Wall()
+    grid[6, 7] = Wall()
+
+    # Generate a Delivery Hub
+    grid[1, 1] = DeliveryHub()
+
+    # Generate Delivery Addresses
+    grid[3, 2] = DeliveryAddress(num_items=3)
+    grid[6, 2] = DeliveryAddress(num_items=2)
+    grid[3, 4] = DeliveryAddress(num_items=1)
+    grid[2, 7] = DeliveryAddress(num_items=2)
+    grid[7, 7] = DeliveryAddress(num_items=3)
+
+    # Agent Settings
+    agent_position = Position(1, 1)
+    agent_orientation = choice(rng, list(Orientation))
+    agent = Agent(agent_position, agent_orientation)
+
+    return State(grid, agent)

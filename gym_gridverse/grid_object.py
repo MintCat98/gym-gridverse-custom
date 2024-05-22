@@ -493,10 +493,10 @@ class DeliveryHub(GridObject):
     blocks_movement = False
     blocks_vision = False
     holdable = False
-    item_num = 5
-    state_index = 0 # OPEN
+    item_num = 11
+    state_index = 0  # OPEN
 
-    def __init__(self):
+    def __init__(self, num_items=item_num):
         self.state_index = 0
 
     @classmethod
@@ -506,19 +506,7 @@ class DeliveryHub(GridObject):
     @classmethod
     def num_states(cls) -> int:
         return len(DeliveryHub.Status)
-    '''
-    @classmethod
-    def is_open(self) -> bool:
-        return self.state == 0
 
-    @classmethod
-    def is_closed(self) -> bool:
-        return self.state == 1
-
-    @classmethod
-    def set_closed(self):
-        self.state_index = 1 #CLOSE
-    '''
     def __repr__(self):
         return f'{self.__class__.__name__}({self.state!s})'
 
