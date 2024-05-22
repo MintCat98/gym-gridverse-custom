@@ -7,6 +7,7 @@ from typing import Dict
 
 import gym
 import numpy as np
+import torch as ch
 from policy_DQN import *
 
 from gym_gridverse.envs.yaml.factory import factory_env_from_yaml
@@ -67,6 +68,13 @@ def main(args):
     network = get_network(env.observation_space, env.action_space.n)
     opt = torch.optim.Adam(network.parameters(), lr=1e-4)
 
+    # load model if exists, AND IF args.load_model is True
+    if args.model:
+        try:
+            network.load_state_dict(ch.load(args.model))
+        except FileNotFoundError:
+            pass
+
     spf = 1 / args.fps
 
     for ei in itt.count():
@@ -114,7 +122,7 @@ def main(args):
 
             if done:
                 break
-
+    ch.save(network.state_dict(), 'model.pth')
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -122,4 +130,5 @@ if __name__ == "__main__":
     parser.add_argument(
         '--fps', type=float, default=1.0, help='frames per second'
     )
+    parser.add_argument('--model', default=None help='load model if path is given')
     main(parser.parse_args())
