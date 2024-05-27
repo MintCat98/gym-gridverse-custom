@@ -1,6 +1,6 @@
 state_space:
   objects: [ Wall, Floor, Exit, DeliveryHub, DeliveryAddress ]
-  colors: [ NONE,  ]
+  colors: [ NONE, YELLOW ]
 
 action_space:
   - MOVE_FORWARD
@@ -12,7 +12,7 @@ action_space:
 
 observation_space:
   objects: [ Wall, Floor, Exit, DeliveryHub, DeliveryAddress ]
-  colors: [ NONE ]
+  colors: [ NONE, YELLOW ]
 
 reset_function:
   name: delivery_town
@@ -26,7 +26,11 @@ transition_functions:
 
 reward_functions:
   - name: living_reward
-    reward: -0.05
+    reward: -0.1
+  - name: drone_env:finish_deliver_reward
+  - name : drone_env:holding_penalty
+  - name : drone_env:Hub_item_empty_reward
+  - name : drone_env:terminating_reward
 
 observation_function:
   name: partially_occluded
