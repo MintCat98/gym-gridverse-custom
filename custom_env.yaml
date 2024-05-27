@@ -9,6 +9,7 @@ action_space:
   - MOVE_RIGHT
   - TURN_LEFT
   - TURN_RIGHT
+  - ACTUATE
 
 observation_space:
   objects: [ Wall, Floor, Exit, DeliveryHub, DeliveryAddress ]
