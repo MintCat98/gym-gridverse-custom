@@ -58,14 +58,21 @@ def make_env(id_or_path: str) -> GymEnvironment:
 
 def print_compact(data: Dict[str, np.ndarray]):
     """Converts numpy arrays into lists before printing, for more compact output."""
-    compact_data = {k: v.tolist() for k, v in data.items()}
-    print(compact_data)
+    if isinstance(data, dict):
+        return np.concatenate([v.flatten() for v in data.values()])
+    elif isinstance(data, np.ndarray):
+        return data.flatten()
+    else:
+        raise TypeError("Unsupported observation type")
 
 
 def main(args):
     env = make_env(args.id_or_path)
-    env.reset()
-    network = get_network(env.observation_space, env.action_space.n)
+    observation = env.reset()
+    observation_space = preprocess_observation(observation)
+    num_states = observation_space.shape[0]
+    
+    network = get_network(num_states, env.action_space.n)
     opt = torch.optim.Adam(network.parameters(), lr=1e-4)
 
     # load model if exists, AND IF args.load_model is True
@@ -82,7 +89,8 @@ def main(args):
         print()
 
         total_reward = 0
-        observation , _ = env.reset()
+ 
+        observation = preprocess_observation(env.reset())
         # what is the actual difference of observation and state, in code?
         
         env.render()
@@ -100,7 +108,8 @@ def main(args):
             # action = env.action_space.sample()
             action = get_action(observation, network)
             observation, reward, done, _ = env.step(action)
-            
+            observation = preprocess_observation(observation)
+
             opt.zero_grad()
             loss = compute_td_loss(observation, action, reward, observation, done, network)
             loss.backward()

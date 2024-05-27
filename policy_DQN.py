@@ -43,19 +43,21 @@ def compute_td_loss(states, actions, rewards, next_states, is_done, network:nn.M
     predicted_qvalues = network(states)                               # shape: [batch_size, n_actions]
 
     # select q-values for chosen actions
-    predicted_qvalues_for_actions = predicted_qvalues[                # shape: [batch_size]
-      range(states.shape[0]), actions
-    ]
+    predicted_qvalues_for_actions = predicted_qvalues.squeeze(-1) # shape: [batch_size]
+    print(predicted_qvalues_for_actions.shape)
+    # predicted_qvalues_for_actions = predicted_qvalues[                
+    #   range(states.shape[0]), actions
+    # ]
 
     # compute q-values for all actions in next states
     predicted_next_qvalues = network(next_states).detach()
 
     # compute V*(next_states) using predicted next q-values
-    next_state_values = torch.max(predicted_next_qvalues, dim=1)[0]
+    next_state_values = torch.max(predicted_next_qvalues)
     assert next_state_values.dtype == torch.float32
 
     # compute "target q-values" for loss
-    target_qvalues_for_actions = rewards + gamma * predicted_next_qvalues[0][np.argmax(predicted_next_qvalues)]
+    target_qvalues_for_actions = rewards + gamma * predicted_next_qvalues[np.argmax(predicted_next_qvalues)]
 
     target_qvalues_for_actions = torch.where(
         is_done, rewards, target_qvalues_for_actions)
@@ -65,3 +67,7 @@ def compute_td_loss(states, actions, rewards, next_states, is_done, network:nn.M
                        target_qvalues_for_actions.detach()) ** 2)
     
     return loss
+
+def preprocess_observation(observation):
+    print(observation.values())
+    return np.concatenate([v.flatten() for v in observation.values()])
