@@ -129,6 +129,6 @@ if __name__ == "__main__":
     parser.add_argument('id_or_path', help='Gym id or GV YAML file')
     parser.add_argument(
         '--fps', type=float, default=1.0, help='frames per second'
-    )
-    parser.add_argument('--model', default=None help='load model if path is given')
+        )
+    parser.add_argument('--model', default=None, help='load model if path is given')
     main(parser.parse_args())
