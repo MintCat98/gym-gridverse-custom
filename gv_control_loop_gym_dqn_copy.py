@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# not tested!!! 
+# not tested!!!
 import argparse
 import itertools as itt
 import time
@@ -71,7 +71,7 @@ def main(args):
     observation = env.reset()
     observation_space = preprocess_observation(observation)
     num_states = observation_space.shape[0]
-    
+
     network = get_network(num_states, env.action_space.n)
     opt = torch.optim.Adam(network.parameters(), lr=1e-4)
 
@@ -84,15 +84,16 @@ def main(args):
 
     spf = 1 / args.fps
 
+    total_reward_list = []
+
     for ei in itt.count():
         print(f'# Episode {ei}')
         print()
 
         total_reward = 0
- 
-        observation = preprocess_observation(env.reset())
+        observation, _ = env.reset()
         # what is the actual difference of observation and state, in code?
-        
+
         env.render()
 
         print('observation:')
@@ -108,18 +109,19 @@ def main(args):
             # action = env.action_space.sample()
             action = get_action(observation, network)
             observation, reward, done, _ = env.step(action)
-            observation = preprocess_observation(observation)
 
             opt.zero_grad()
-            loss = compute_td_loss(observation, action, reward, observation, done, network)
+            loss = compute_td_loss(
+                observation, action, reward, observation, done, network
+            )
             loss.backward()
             opt.step()
 
             total_reward += reward
 
-
             env.render()
 
+            print(f'total reward: {total_reward}')
             print(f'action: {action}')
             print(f'reward: {reward}')
             print('observation:')
@@ -131,13 +133,18 @@ def main(args):
 
             if done:
                 break
+
+        total_reward_list.append(total_reward)
     ch.save(network.state_dict(), 'model.pth')
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('id_or_path', help='Gym id or GV YAML file')
     parser.add_argument(
         '--fps', type=float, default=1.0, help='frames per second'
-        )
-    parser.add_argument('--model', default=None, help='load model if path is given')
+    )
+    parser.add_argument(
+        '--model', default=None, help='load model if path is given'
+    )
     main(parser.parse_args())
