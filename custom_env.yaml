@@ -27,24 +27,25 @@ transition_functions:
 
 reward_functions:
   - name: living_reward
-    reward: -0.1
+    reward: -0.5
   - name: drone_env:finish_deliver_reward
   - name : drone_env:reload_reward
   - name : drone_env:terminating_reward
   - name : drone_env:actuate_on_empty
-
+  #- name : drone_env:holding_penalty
   - name : getting_closer_Address
-    reward_items_factor : 0.2
+    reward_items_factor : 2.0
     hub_type : DeliveryHub
     object_type: DeliveryAddress
     reward_closer: 0.2
     reward_further: -0.5
-
+  - name : reach_address
+  
   - name : getting_closer_Hub
     reward_items_factor : 0.2
     object_type : DeliveryHub
     reward_closer: 0.9
-
+  - name : bump_into_wall
 observation_function:
   name: partially_occluded
   area: [ [ -6, 0 ], [-3, 3 ] ]

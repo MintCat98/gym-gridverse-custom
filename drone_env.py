@@ -132,7 +132,7 @@ def finish_deliver_reward(
     if isinstance(state.grid[next_state.agent.position], DeliveryAddress) and action == Action.ACTUATE :
         DeliverAdd = state.grid[next_state.agent.position]
         if (DeliverAdd.is_empty != True) and state.agent.capacity > 0:
-            reward = 50.0
+            reward = 800.0
         elif state.agent.capacity == 0:
             reward = -1.5
         elif DeliverAdd.is_empty == True :
@@ -159,11 +159,11 @@ def reload_reward(
         Hub = state.grid[state.agent.position] 
         if state.grid[state.agent.position].state_index == 0 and (Hub.is_empty == False):  # OPEN
             if state.agent.max_capacity > state.agent.capacity :
-                reward = 100.0
+                reward = 1000.0
             else :
                 reward = 0
         if (Hub.is_empty == True) and (Hub.is_rewarded == False):
-            reward = 50
+            reward = 1000
             Hub.is_rewarded = True
         else :
             reward = 0
@@ -186,13 +186,13 @@ def actuate_on_empty(
     """gives reward if a delivery is correctly"""   
     if  action == Action.ACTUATE :
         if isinstance(state.grid[next_state.agent.position], DeliveryAddress):
-            Obj = state.grid[state.agent.position]
+            Obj = state.grid[next_state.agent.position]
             if (Obj.is_empty == True) or (state.agent.capacity == 0):
                 reward = -10
             else :
                 reward = 10 
         elif isinstance(state.grid[next_state.agent.position], DeliveryHub) :
-            Obj = state.grid[state.agent.position]
+            Obj = state.grid[next_state.agent.position]
             if (Obj.is_empty == True) :
                 reward = -10
             else :
@@ -200,7 +200,22 @@ def actuate_on_empty(
         else :
             reward = -5
     else :
-        reward = 0
+        if isinstance(state.grid[next_state.agent.position], DeliveryAddress):
+            Obj = state.grid[next_state.agent.position]
+            if (Obj.is_empty == True) :
+                reward = -20
+            else :
+                reward = 0
+        elif isinstance(state.grid[next_state.agent.position], DeliveryHub) :
+            Obj = state.grid[next_state.agent.position]
+            if (Obj.is_empty == True) :
+                reward = -20
+            else :
+                reward = 0
+        else :
+            reward = 0
+            
+
     print(f"actuate_on_empty reward : {reward}")
  
     return reward
@@ -232,7 +247,7 @@ def terminating_reward(
     action: Action,
     next_state: State,
     *,
-    reward: float = 150,
+    reward: float = 3000,
     rng: Optional[rnd.Generator] = None,
 ):
     """gives reward if all delivery is finish """

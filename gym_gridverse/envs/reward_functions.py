@@ -19,6 +19,8 @@ from gym_gridverse.grid_object import (
     GridObject,
     MovingObstacle,
     Wall,
+    DeliveryAddress,
+    DeliveryHub
 )
 from gym_gridverse.state import State
 from gym_gridverse.utils.custom import import_if_custom
@@ -563,6 +565,38 @@ def getting_closer_Address(
     else :
         return 0
 
+@reward_function_registry.register
+def reach_address(
+    state: State,
+    action: Action,
+    next_state: State,
+    *,
+    reward_on: float = 75.0,
+    reward_off: float = -10.0,
+    rng: Optional[rnd.Generator] = None,
+) -> float:
+    """reward for the Agent being on a Exit
+
+    Args:
+        state (`State`):
+        action (`Action`):
+        next_state (`State`):
+        reward_on (`float`): reward for when agent is on exit
+        reward_off (`float`): reward for when agent is not on exit
+        rng (`Generator, optional`)
+
+    Returns:
+        float: one of the two input rewards
+    """
+    return overlap(
+        state,
+        action,
+        next_state,
+        object_type=DeliveryAddress,
+        reward_on=reward_on,
+        reward_off=reward_off,
+        rng=rng,
+    )
 
 
 @reward_function_registry.register
@@ -727,7 +761,7 @@ def bump_into_wall(
     action: Action,
     next_state: State,
     *,
-    reward: float = -1.0,
+    reward: float = -50.0,
     rng: Optional[rnd.Generator] = None,
 ):
     """Returns `reward` when bumping into wall, otherwise 0
@@ -746,7 +780,11 @@ def bump_into_wall(
     next_position = get_next_position(
         state.agent.position, state.agent.orientation, action
     )
-
+    print('bumping door :')
+    print(reward
+        if state.grid.area.contains(next_position)
+        and isinstance(state.grid[next_position], Wall)
+        else 0.0)
     return (
         reward
         if state.grid.area.contains(next_position)
