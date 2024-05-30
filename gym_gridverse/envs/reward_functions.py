@@ -540,8 +540,8 @@ def getting_closer_shortest_path_weighted_with_remain_items(
         print(f'getting_closer multi address  closer :{reward_closer + (value_prev)}') 
     elif distance_next < distance_prev :
         print(f'getting_closer multi address far :{reward_further - (value_prev)}')
-        
-    if action == Action.ACTUATE :
+
+    if action == Action.ACTUATE or value_prev == 0 :
         return 0
     elif distance_next < distance_prev :
         return reward_closer + (value_prev) 
@@ -628,7 +628,7 @@ def getting_closer_shortest_path_with_remain_item(
     elif distance_next < distance_prev :
         print(f'weight Hub remain item :{value_prev}')
         print(f'getting_closer_shortest_path_with_remain_item far :{reward_further - (value_prev)}')
-    if action == Action.ACTUATE :
+    if action == Action.ACTUATE or value_prev == 0 :
         return 0
     elif distance_next < distance_prev :
         return reward_closer + (value_prev) 
