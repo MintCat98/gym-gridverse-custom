@@ -1,10 +1,11 @@
 #!/usr/bin/env python
-# not tested!!! 
+# not tested!!!
 import argparse
 import itertools as itt
 import time
 from typing import Dict
 
+import pandas as pd
 import gym
 import numpy as np
 import torch as ch
@@ -58,14 +59,21 @@ def make_env(id_or_path: str) -> GymEnvironment:
 
 def print_compact(data: Dict[str, np.ndarray]):
     """Converts numpy arrays into lists before printing, for more compact output."""
-    compact_data = {k: v.tolist() for k, v in data.items()}
-    print(compact_data)
+    if isinstance(data, dict):
+        return np.concatenate([v.flatten() for v in data.values()])
+    elif isinstance(data, np.ndarray):
+        return data.flatten()
+    else:
+        raise TypeError("Unsupported observation type")
 
 
 def main(args):
     env = make_env(args.id_or_path)
-    env.reset()
-    network = get_network(env.observation_space, env.action_space.n)
+    observation = env.reset()
+    observation_space = preprocess_observation(observation)
+    num_states = observation_space.shape[0]
+
+    network = get_network(num_states, env.action_space.n)
     opt = torch.optim.Adam(network.parameters(), lr=1e-4)
 
     # load model if exists, AND IF args.load_model is True
@@ -77,14 +85,17 @@ def main(args):
 
     spf = 1 / args.fps
 
-    for ei in itt.count():
+    total_reward_list = []
+
+    for ei in range(100):
         print(f'# Episode {ei}')
         print()
 
         total_reward = 0
-        observation , _ = env.reset()
+        observation = preprocess_observation(env.reset())
+
         # what is the actual difference of observation and state, in code?
-        
+
         env.render()
 
         print('observation:')
@@ -100,17 +111,20 @@ def main(args):
             # action = env.action_space.sample()
             action = get_action(observation, network)
             observation, reward, done, _ = env.step(action)
-            
+            observation = preprocess_observation(observation)
+
             opt.zero_grad()
-            loss = compute_td_loss(observation, action, reward, observation, done, network)
+            loss = compute_td_loss(
+                observation, action, reward, observation, done, network
+            )
             loss.backward()
             opt.step()
 
             total_reward += reward
 
-
             env.render()
 
+            print(f'total reward: {total_reward}')
             print(f'action: {action}')
             print(f'reward: {reward}')
             print('observation:')
@@ -122,7 +136,13 @@ def main(args):
 
             if done:
                 break
+
+        total_reward_list.append(total_reward)
+    
+    df = pd.DataFrame(total_reward_list, columns=['Total Reward'])
+    df.to_csv('total_rewards.csv', index_label='Episode')
     ch.save(network.state_dict(), 'model.pth')
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -130,5 +150,7 @@ if __name__ == "__main__":
     parser.add_argument(
         '--fps', type=float, default=1.0, help='frames per second'
     )
-    parser.add_argument('--model', default=None help='load model if path is given')
+    parser.add_argument(
+        '--model', default=None, help='load model if path is given'
+    )
     main(parser.parse_args())
