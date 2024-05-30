@@ -450,7 +450,7 @@ def dijkstra(
     return distances
 
 @reward_function_registry.register
-def getting_closer_shortest_path_weighted_with_remain_items(
+def getting_closer_Address(
     state: State,
     action: Action,
     next_state: State,
@@ -541,16 +541,27 @@ def getting_closer_shortest_path_weighted_with_remain_items(
     elif distance_next < distance_prev :
         print(f'getting_closer multi address far :{reward_further - (value_prev)}')
 
-    if action == Action.ACTUATE or value_prev == 0 :
+    if action == Action.ACTUATE  :
         return 0
-    elif distance_next < distance_prev :
-        return reward_closer + (value_prev) 
+    elif value_prev == 0 :
+        return -1
+    elif distance_next < distance_prev : #closer
+        if value_prev > 0 : #closer + add has remaining items
+            return reward_closer + (value_prev) 
+        else : #closer + add is empty
+             return reward_further - (value_prev) 
+    elif distance_next > distance_prev : #further
+        if value_prev > 0 : #further + add has remaining items
+            return  reward_further - (value_prev) 
+        else : #further + add is empty
+             return reward_closer + (value_prev) 
     else :
-        return reward_further - (value_prev)
+        return 0
+
 
 
 @reward_function_registry.register
-def getting_closer_shortest_path_with_remain_item(
+def getting_closer_Hub(
     state: State,
     action: Action,
     next_state: State,
@@ -620,20 +631,33 @@ def getting_closer_shortest_path_with_remain_item(
     value_prev = _weighted_address_value(state)
     value_next = _weighted_address_value(next_state)
     
-    if action == Action.ACTUATE :
-        print(f'getting_closer_shortest_path_with_remain_item closer :{0}') 
-    elif distance_next < distance_prev :
-        print(f'weight Hub remain item :{value_prev}')
-        print(f'getting_closer_shortest_path_with_remain_item closer :{reward_closer + (value_prev)}') 
-    elif distance_next < distance_prev :
-        print(f'weight Hub remain item :{value_prev}')
-        print(f'getting_closer_shortest_path_with_remain_item far :{reward_further - (value_prev)}')
-    if action == Action.ACTUATE or value_prev == 0 :
+
+    if action == Action.ACTUATE  :
+        print(f"getting close Hub / Actovate : {0}")
         return 0
-    elif distance_next < distance_prev :
-        return reward_closer + (value_prev) 
+    elif value_prev == 0 :
+        print(f"getting close Hub / empty : {-5}")
+        return -5
+    elif distance_next < distance_prev : #closer
+        if value_prev > 0 : #closer + hub has remaining items & agent has less items
+            if state.agent.capacity == 0 :
+                print(f"getting close Hub / closer + less item : {5 * reward_closer + 1.5 * (value_prev) }")
+                return 5 * reward_closer + 1.5 * (value_prev) 
+            else :
+                print(f"getting close Hub / closer : {2 * reward_closer + 1.5 * (value_prev) }")
+                return reward_closer + 1.5 * (value_prev) 
+        else : #closer + hub is empty
+             print(f"getting close Hub / closer + hub is empty : {reward_further -  2 }")
+             return reward_further -  2
+    elif distance_next > distance_prev : #further
+        if value_prev > 0 : #further + hub has remaining items
+            print(f"getting close Hub / further + hub has remaining items : {  reward_further - (value_prev) * 5 }")
+            return  reward_further - (value_prev) * 5
+        else : #further + hub is empty
+             print(f"getting close Hub / further + hub is empty : { reward_closer + (value_prev) * 2 }")
+             return reward_closer + (value_prev) * 2
     else :
-        return reward_further - (value_prev)
+        return 0
 
 @reward_function_registry.register
 def getting_closer_shortest_path(

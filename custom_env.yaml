@@ -33,17 +33,17 @@ reward_functions:
   - name : drone_env:terminating_reward
   - name : drone_env:actuate_on_empty
 
-  - name : getting_closer_shortest_path_weighted_with_remain_items
-    reward_items_factor : 0.8
+  - name : getting_closer_Address
+    reward_items_factor : 0.2
     hub_type : DeliveryHub
     object_type: DeliveryAddress
-    reward_closer: 0.5
+    reward_closer: 0.2
     reward_further: -0.5
 
-  - name : getting_closer_shortest_path_with_remain_item
-    reward_items_factor : 0.3
+  - name : getting_closer_Hub
+    reward_items_factor : 0.2
     object_type : DeliveryHub
-    reward_closer: 0.5
+    reward_closer: 0.9
 
 observation_function:
   name: partially_occluded
