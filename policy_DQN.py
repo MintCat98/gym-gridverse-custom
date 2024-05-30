@@ -69,5 +69,5 @@ def compute_td_loss(states, actions, rewards, next_states, is_done, network:nn.M
     return loss
 
 def preprocess_observation(observation):
-    print(observation.values())
+    #print(observation.values())
     return np.concatenate([v.flatten() for v in observation.values()])

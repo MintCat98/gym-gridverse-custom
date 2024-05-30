@@ -98,8 +98,8 @@ def main(args):
 
         env.render()
 
-        print('observation:')
-        print_compact(observation)
+        #print('observation:')
+        #print_compact(observation)
         print()
 
         time.sleep(spf)
@@ -127,8 +127,8 @@ def main(args):
             print(f'total reward: {total_reward}')
             print(f'action: {action}')
             print(f'reward: {reward}')
-            print('observation:')
-            print_compact(observation)
+            #print('observation:')
+            #print_compact(observation)
             print(f'done: {done}')
             print()
 

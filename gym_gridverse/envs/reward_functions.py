@@ -449,6 +449,187 @@ def dijkstra(
 
     return distances
 
+@reward_function_registry.register
+def getting_closer_shortest_path_weighted_with_remain_items(
+    state: State,
+    action: Action,
+    next_state: State,
+    *,
+    object_type: Type[GridObject],
+    hub_type : Type[GridObject],
+    reward_closer: float = 1.0,
+    reward_further: float = -1.0,
+    reward_items_factor : float = 0.2,
+    rng: Optional[rnd.Generator] = None,
+) -> float:
+    """reward for getting closer or further to the nearest object, assuming normal navigation dynamics
+
+    Args:
+        state (`State`):
+        action (`Action`):
+        next_state (`State`):
+        object_type: (`Type[GridObject]`): type of objects in the grid
+        reward_closer (`float`): reward for when agent gets closer to the nearest object
+        reward_further (`float`): reward for when agent gets further to the nearest object
+        rng (`Generator, optional`)
+
+    Returns:
+        float: one of the input rewards, or 0.0 if distance has not changed
+    """
+
+
+    def _distance_agent_to_nearest_object(state): # Delivery Address
+        object_positions = [
+            position
+            for position in state.grid.area.positions()
+            if isinstance(state.grid[position], object_type)
+        ]
+
+        if not object_positions:
+            return float('inf')  # No objects of the specified type found
+
+        layout = tuple(
+            tuple(
+                not state.grid[y, x].blocks_movement
+                for x in range(state.grid.shape.width)
+            )
+            for y in range(state.grid.shape.height)
+        )
+
+        agent_position = (state.agent.position.y, state.agent.position.x)
+        distances = []
+
+        for object_position in object_positions:
+            distance_array = dijkstra(
+                layout, (object_position.y, object_position.x)
+            )
+            distances.append(distance_array[agent_position[0], agent_position[1]])
+
+        return min(distances)
+
+    distance_prev = _distance_agent_to_nearest_object(state)
+    distance_next = _distance_agent_to_nearest_object(next_state)
+
+    def _weighted_address_value(state):
+        address_positions = [
+            position
+            for position in state.grid.area.positions()
+            if isinstance(state.grid[position], object_type)
+        ]
+
+        total_value = 0
+        for address_position in address_positions:
+            #distance_to_hub = _distance_to_nearest_hub(state, address_position)
+            delivery_address = state.grid[address_position]
+            remaining_items = delivery_address.num_items  # Assuming `remaining_items` attribute exists
+
+            # Higher reward for addresses closer to the hub and with more items
+            address_value = (
+                remaining_items * reward_items_factor
+            )
+            total_value += address_value
+
+        return total_value
+
+    value_prev = _weighted_address_value(state)
+    value_next = _weighted_address_value(next_state)
+
+    if distance_next < distance_prev :
+        print(f'weight Hub remain item :{value_prev}')
+        print(f'getting_closer multi address closer :{reward_closer + (value_prev)}') 
+    else :
+        print(f'weight Hub remain item :{value_prev}')
+        print(f'getting_closer multi address far :{reward_further - (value_prev)}')
+    return (
+        reward_closer + (value_prev) if distance_next < distance_prev 
+        else reward_further - (value_prev)
+
+    )
+
+
+@reward_function_registry.register
+def getting_closer_shortest_path_with_remain_item(
+    state: State,
+    action: Action,
+    next_state: State,
+    *,
+    object_type: Type[GridObject],
+    reward_closer: float = 1.0,
+    reward_further: float = -1.0,
+    rng: Optional[rnd.Generator] = None,
+) -> float:
+    """reward for getting closer or further to object, *assuming normal navigation dynamics*
+
+    Args:
+        state (`State`):
+        action (`Action`):
+        next_state (`State`):
+        object_type: (`Type[GridObject]`): type of unique object in grid
+        reward_closer (`float`): reward for when agent gets closer to object
+        reward_further (`float`): reward for when agent gets further to object
+        rng (`Generator, optional`)
+
+    Returns:
+        float: one of the input rewards, or 0.0 if distance has not changed
+    """
+
+    def _distance_agent_object(state):
+        object_position = mitt.one(
+            position
+            for position in state.grid.area.positions()
+            if isinstance(state.grid[position], object_type)
+        )
+
+        layout = tuple(
+            tuple(
+                not state.grid[y, x].blocks_movement
+                for x in range(state.grid.shape.width)
+            )
+            for y in range(state.grid.shape.height)
+        )
+        distance_array = dijkstra(
+            layout, (object_position.y, object_position.x)
+        )
+        return distance_array[state.agent.position.y, state.agent.position.x]
+    def _weighted_address_value(state):
+        address_positions = [
+            position
+            for position in state.grid.area.positions()
+            if isinstance(state.grid[position], object_type)
+        ]
+
+        total_value = 0
+        for address_position in address_positions:
+            #distance_to_hub = _distance_to_nearest_hub(state, address_position)
+            delivery_hub= state.grid[address_position]
+            remaining_items = delivery_hub.item_num  # Assuming `remaining_items` attribute exists
+            print(f'Hub remain item :{remaining_items}')
+            # Higher reward for addresses closer to the hub and with more items
+            address_value = (
+                remaining_items * 0.01
+            )
+            total_value += address_value
+        
+        return total_value
+    
+    distance_prev = _distance_agent_object(state)
+    distance_next = _distance_agent_object(next_state)
+
+    value_prev = _weighted_address_value(state)
+    value_next = _weighted_address_value(next_state)
+    if distance_next < distance_prev :
+        print(f'weight Hub remain item :{value_prev}')
+        print(f'getting_closer_shortest_path_with_remain_item closer :{reward_closer + (value_prev)}') 
+    else :
+        print(f'weight Hub remain item :{value_prev}')
+        print(f'getting_closer_shortest_path_with_remain_item far :{reward_further - (value_prev)}')
+    return (
+        reward_closer + (value_prev)
+        if distance_next < distance_prev
+        else reward_further - (value_prev)
+        if distance_next > distance_prev
+        else 0.0
+    )
 
 @reward_function_registry.register
 def getting_closer_shortest_path(

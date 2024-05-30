@@ -133,6 +133,8 @@ def finish_deliver_reward(
         DeliverAdd = state.grid[next_state.agent.position]
         if (DeliverAdd.is_empty != True) and state.agent.capacity > 0:
             reward = 3.0
+        elif state.agent.capacity == 0:
+            reward = -1.5
         elif DeliverAdd.is_empty == True :
             reward = -1.5
         else :
@@ -142,7 +144,36 @@ def finish_deliver_reward(
     print(f"finish_deliver reward : {reward}")
  
     return reward
-    
+
+@reward_function_registry.register
+def reload_reward(
+    state: State,
+    action: Action,
+    next_state: State,
+    *,
+    reward: float = 1.0,
+    rng: Optional[rnd.Generator] = None,
+):
+    """gives reward if a delivery is correctly"""   
+    if isinstance(next_state.grid[next_state.agent.position], DeliveryHub) and action == Action.ACTUATE:
+        Hub = state.grid[state.agent.position] 
+        if state.grid[state.agent.position].state_index == 0 and (Hub.is_empty == False):  # OPEN
+            if state.agent.max_capacity > state.agent.capacity :
+                reward = 5.0
+            else :
+                reward = 0
+        if (Hub.is_empty == True) and (Hub.is_rewarded == False):
+            reward = 5
+            Hub.is_rewarded = True
+        else :
+            reward = 0
+    else :
+        reward = 0
+    print("reload_reward : ")
+    print(reward)
+
+    return reward
+
 @reward_function_registry.register
 def actuate_on_empty(
     state: State,
@@ -183,29 +214,6 @@ def holding_penalty(
         if state.agent.capacity > 0
         else 0.0
     )
-
-@reward_function_registry.register
-def Hub_item_empty_reward(
-    state: State,
-    action: Action,
-    next_state: State,
-    *,
-    reward: float = 5,
-    rng: Optional[rnd.Generator] = None,
-):
-    """gives reward if hub is empty (== agent reload all itmes in Hub)"""
-    if isinstance(next_state.grid[next_state.agent.position],DeliveryHub) :
-        Hub = next_state.grid[next_state.agent.position]
-        if (Hub.is_empty == True) and (Hub.is_rewarded == False):
-            reward = 5
-            Hub.is_rewarded = True
-        else :
-            reward = 0
-    else :
-        reward = 0
-    print("Hub_item_empty_reward : ")
-    print(reward)
-    return reward
     
 
 @reward_function_registry.register
