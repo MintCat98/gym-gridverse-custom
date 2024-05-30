@@ -458,7 +458,7 @@ def getting_closer_shortest_path_weighted_with_remain_items(
     object_type: Type[GridObject],
     hub_type : Type[GridObject],
     reward_closer: float = 1.0,
-    reward_further: float = -1.0,
+    reward_further: float = 0,
     reward_items_factor : float = 0.2,
     rng: Optional[rnd.Generator] = None,
 ) -> float:
@@ -534,17 +534,19 @@ def getting_closer_shortest_path_weighted_with_remain_items(
     value_prev = _weighted_address_value(state)
     value_next = _weighted_address_value(next_state)
 
-    if distance_next < distance_prev :
-        print(f'weight Hub remain item :{value_prev}')
-        print(f'getting_closer multi address closer :{reward_closer + (value_prev)}') 
-    else :
-        print(f'weight Hub remain item :{value_prev}')
+    if action == Action.ACTUATE :
+        print(f'getting_closer multi address  :{0}') 
+    elif distance_next < distance_prev :
+        print(f'getting_closer multi address  closer :{reward_closer + (value_prev)}') 
+    elif distance_next < distance_prev :
         print(f'getting_closer multi address far :{reward_further - (value_prev)}')
-    return (
-        reward_closer + (value_prev) if distance_next < distance_prev 
-        else reward_further - (value_prev)
-
-    )
+        
+    if action == Action.ACTUATE :
+        return 0
+    elif distance_next < distance_prev :
+        return reward_closer + (value_prev) 
+    else :
+        return reward_further - (value_prev)
 
 
 @reward_function_registry.register
@@ -555,7 +557,7 @@ def getting_closer_shortest_path_with_remain_item(
     *,
     object_type: Type[GridObject],
     reward_closer: float = 1.0,
-    reward_further: float = -1.0,
+    reward_further: float = 0,
     rng: Optional[rnd.Generator] = None,
 ) -> float:
     """reward for getting closer or further to object, *assuming normal navigation dynamics*
@@ -617,19 +619,21 @@ def getting_closer_shortest_path_with_remain_item(
 
     value_prev = _weighted_address_value(state)
     value_next = _weighted_address_value(next_state)
-    if distance_next < distance_prev :
+    
+    if action == Action.ACTUATE :
+        print(f'getting_closer_shortest_path_with_remain_item closer :{0}') 
+    elif distance_next < distance_prev :
         print(f'weight Hub remain item :{value_prev}')
         print(f'getting_closer_shortest_path_with_remain_item closer :{reward_closer + (value_prev)}') 
-    else :
+    elif distance_next < distance_prev :
         print(f'weight Hub remain item :{value_prev}')
         print(f'getting_closer_shortest_path_with_remain_item far :{reward_further - (value_prev)}')
-    return (
-        reward_closer + (value_prev)
-        if distance_next < distance_prev
-        else reward_further - (value_prev)
-        if distance_next > distance_prev
-        else 0.0
-    )
+    if action == Action.ACTUATE :
+        return 0
+    elif distance_next < distance_prev :
+        return reward_closer + (value_prev) 
+    else :
+        return reward_further - (value_prev)
 
 @reward_function_registry.register
 def getting_closer_shortest_path(
