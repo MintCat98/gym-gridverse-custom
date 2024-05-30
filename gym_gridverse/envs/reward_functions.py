@@ -571,8 +571,8 @@ def reach_address(
     action: Action,
     next_state: State,
     *,
-    reward_on: float = 75.0,
-    reward_off: float = -10.0,
+    reward_on: float = 5.0,
+    reward_off: float = -1.0,
     rng: Optional[rnd.Generator] = None,
 ) -> float:
     """reward for the Agent being on a Exit
@@ -675,8 +675,8 @@ def getting_closer_Hub(
         print(f"getting close Hub / Actovate : {0}")
         return 0
     elif value_prev == 0 :
-        print(f"getting close Hub / empty : {-5}")
-        return -5
+        print(f"getting close Hub / empty : {0}")
+        return 0
     elif distance_next < distance_prev : #closer
         if value_prev > 0 : #closer + hub has remaining items & agent has less items
             if state.agent.capacity == 0 :
@@ -694,7 +694,7 @@ def getting_closer_Hub(
             return  reward_further - (value_prev) * 5
         else : #further + hub is empty
              print(f"getting close Hub / further + hub is empty : { reward_closer + (value_prev) * 2 }")
-             return reward_closer + (value_prev) * 2
+             return 0
     else :
         return 0
 
@@ -761,7 +761,7 @@ def bump_into_wall(
     action: Action,
     next_state: State,
     *,
-    reward: float = -50.0,
+    reward: float = -2.0,
     rng: Optional[rnd.Generator] = None,
 ):
     """Returns `reward` when bumping into wall, otherwise 0

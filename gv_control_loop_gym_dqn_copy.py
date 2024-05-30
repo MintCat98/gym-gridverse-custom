@@ -87,7 +87,7 @@ def main(args):
 
     total_reward_list = []
 
-    for ei in range(100):
+    for ei in range(20):
         print(f'# Episode {ei}')
         print()
 
@@ -103,11 +103,10 @@ def main(args):
         print()
 
         time.sleep(spf)
-
         for ti in itt.count():
             print(f'episode: {ei}')
             print(f'time: {ti}')
-
+            
             # action = env.action_space.sample()
             action = get_action(observation, network)
             observation, reward, done, _ = env.step(action)
