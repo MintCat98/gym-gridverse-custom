@@ -503,7 +503,12 @@ def getting_closer_Address(
             distance_array = dijkstra(
                 layout, (object_position.y, object_position.x)
             )
-            distances.append(distance_array[agent_position[0], agent_position[1]])
+            delivery_address = state.grid[object_position]
+            remaining_items = delivery_address.num_items 
+            if remaining_items == 0 :
+                 distances.append(100)
+            else :
+                distances.append(distance_array[agent_position[0], agent_position[1]])
 
         return min(distances)
 
