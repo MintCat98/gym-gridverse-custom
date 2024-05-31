@@ -87,7 +87,7 @@ def main(args):
 
     total_reward_list = []
 
-    for ei in range(20):
+    for ei in range(100):
         print(f'# Episode {ei}')
         print()
 
