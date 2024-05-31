@@ -588,15 +588,14 @@ def reach_address(
     Returns:
         float: one of the two input rewards
     """
-    return overlap(
-        state,
-        action,
-        next_state,
-        object_type=DeliveryAddress,
-        reward_on=reward_on,
-        reward_off=reward_off,
-        rng=rng,
-    )
+    reward = reward_off
+    if isinstance(next_state.grid[next_state.agent.position], DeliveryAddress) :
+        add = next_state.grid[next_state.agent.position]
+        if add.is_empty == True :
+            reward = reward_off
+        else :
+            reward = reward_on
+    return reward
 
 
 @reward_function_registry.register

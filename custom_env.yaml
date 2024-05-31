@@ -27,7 +27,7 @@ transition_functions:
 
 reward_functions:
   - name: living_reward
-    reward: -10
+    reward: -0.5
   - name: drone_env:finish_deliver_reward
   - name : drone_env:reload_reward
     reward_Hub: 200
@@ -42,7 +42,7 @@ reward_functions:
     object_type: DeliveryAddress
     reward_closer: 0.1
     reward_further: 0
-  #- name : reach_address
+  - name : reach_address
   
   - name : getting_closer_Hub
     reward_items_factor : 1.5
