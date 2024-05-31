@@ -783,7 +783,7 @@ def bump_into_wall(
     #print(reward
     #    if state.grid.area.contains(next_position)
     #    and isinstance(state.grid[next_position], Wall)
-        else 0.0)
+    #    else 0.0)
     return (
         reward
         if state.grid.area.contains(next_position)
