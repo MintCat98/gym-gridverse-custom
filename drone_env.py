@@ -90,11 +90,11 @@ def reload_items_from_Hub_transition(  # reload
             if state.agent.max_capacity > state.agent.capacity :
                 state.agent.capacity += 1
                 Hub.item_num -= 1
-        print(f'drone capacity after reload : {state.agent.capacity}')
+        #print(f'drone capacity after reload : {state.agent.capacity}')
 
         if Hub.is_empty :
             Hub.state_index = 1
-            print(f'Hub is empty')
+            #print(f'Hub is empty')
 
         
 
@@ -111,12 +111,12 @@ def unload_transition(  # unload
     if isinstance(state.grid[state.agent.position], DeliveryAddress) and action == Action.ACTUATE:
         delivery_address = state.grid[state.agent.position] 
         if state.agent.capacity > 0 and delivery_address.is_empty == False:
-            print(f'delivery before : {delivery_address.num_items}')
+            #print(f'delivery before : {delivery_address.num_items}')
             delivery_address.num_items -= 1
             state.agent.finished_deliver_num += 1
             state.agent.capacity -= 1
-            print(f'delivery after : {delivery_address.num_items}')
-        print(f'drone capacity after unload : {state.agent.capacity}')
+            #print(f'delivery after : {delivery_address.num_items}')
+        #print(f'drone capacity after unload : {state.agent.capacity}')
 
 
 @reward_function_registry.register
@@ -133,15 +133,11 @@ def finish_deliver_reward(
         DeliverAdd = state.grid[next_state.agent.position]
         if (DeliverAdd.is_empty != True) and state.agent.capacity > 0:
             reward = 800.0
-        elif state.agent.capacity == 0:
-            reward = -1.5
-        elif DeliverAdd.is_empty == True :
-            reward = -1.5
         else :
             reward = 0
     else :
         reward = 0
-    print(f"finish_deliver reward : {reward}")
+    #print(f"finish_deliver reward : {reward}")
  
     return reward
 
@@ -151,6 +147,7 @@ def reload_reward(
     action: Action,
     next_state: State,
     *,
+    reward_Hub: float = 200.0,
     reward: float = 1.0,
     rng: Optional[rnd.Generator] = None,
 ):
@@ -159,18 +156,18 @@ def reload_reward(
         Hub = state.grid[state.agent.position] 
         if state.grid[state.agent.position].state_index == 0 and (Hub.is_empty == False):  # OPEN
             if state.agent.max_capacity > state.agent.capacity :
-                reward = 1000.0
+                reward = reward_Hub
             else :
                 reward = 0
         if (Hub.is_empty == True) and (Hub.is_rewarded == False):
-            reward = 1000
+            reward = reward_Hub
             Hub.is_rewarded = True
         else :
             reward = 0
     else :
         reward = 0
-    print("reload_reward : ")
-    print(reward)
+    #("reload_reward : ")
+    #print(reward)
 
     return reward
 
@@ -190,7 +187,7 @@ def actuate_on_empty(
             if (Obj.is_empty == True) or (state.agent.capacity == 0):
                 reward = -10
             else :
-                reward = 10 
+                reward = 0 
         elif isinstance(state.grid[next_state.agent.position], DeliveryHub) :
             Obj = state.grid[next_state.agent.position]
             if (Obj.is_empty == True) :
@@ -200,23 +197,10 @@ def actuate_on_empty(
         else :
             reward = -5
     else :
-        if isinstance(state.grid[next_state.agent.position], DeliveryAddress):
-            Obj = state.grid[next_state.agent.position]
-            if (Obj.is_empty == True) :
-                reward = -20
-            else :
-                reward = 0
-        elif isinstance(state.grid[next_state.agent.position], DeliveryHub) :
-            Obj = state.grid[next_state.agent.position]
-            if (Obj.is_empty == True) :
-                reward = -20
-            else :
-                reward = 0
-        else :
-            reward = 0
+        reward = 0
             
 
-    print(f"actuate_on_empty reward : {reward}")
+    #print(f"actuate_on_empty reward : {reward}")
  
     return reward
 
@@ -230,10 +214,10 @@ def holding_penalty(
     rng: Optional[rnd.Generator] = None,
 ):
     """gives reward if a delivery is correctly"""
-    print("holding penalty reward : ")
-    print(reward * state.agent.capacity
-        if state.agent.capacity > 0
-        else 0.0)
+    #print("holding penalty reward : ")
+    #print(reward * state.agent.capacity
+    #    if state.agent.capacity > 0
+    #    else 0.0)
     return (
         reward * state.agent.capacity
         if state.agent.capacity > 0
@@ -247,14 +231,14 @@ def terminating_reward(
     action: Action,
     next_state: State,
     *,
-    reward: float = 3000,
+    reward: float = 500,
     rng: Optional[rnd.Generator] = None,
 ):
     """gives reward if all delivery is finish """
-    print("terminating_reward : ")
-    print(reward
-        if DeliveryHub.target_num == next_state.agent.finished_deliver_num
-        else 0.0)
+    #print("terminating_reward : ")
+    #print(reward
+    #    if DeliveryHub.target_num == next_state.agent.finished_deliver_num
+    #    else 0.0)
     return (
         reward
         if DeliveryHub.target_num == next_state.agent.finished_deliver_num

@@ -89,23 +89,23 @@ def main(args):
 
     for ei in range(100):
         print(f'# Episode {ei}')
-        print()
+        #print()
 
         total_reward = 0
         observation = preprocess_observation(env.reset())
 
         # what is the actual difference of observation and state, in code?
 
-        env.render()
+        #env.render()
 
         #print('observation:')
         #print_compact(observation)
-        print()
+        #print()
 
         time.sleep(spf)
         for ti in itt.count():
-            print(f'episode: {ei}')
-            print(f'time: {ti}')
+            #print(f'episode: {ei}')
+            #print(f'time: {ti}')
             
             # action = env.action_space.sample()
             action = get_action(observation, network)
@@ -121,19 +121,21 @@ def main(args):
 
             total_reward += reward
 
-            env.render()
+            #env.render()
 
-            print(f'total reward: {total_reward}')
-            print(f'action: {action}')
-            print(f'reward: {reward}')
+           #print(f'total reward: {total_reward}')
+           # print(f'action: {action}')
+           #print(f'reward: {reward}')
             #print('observation:')
             #print_compact(observation)
-            print(f'done: {done}')
-            print()
+            #print(f'done: {done}')
+            #print()
 
             time.sleep(spf)
 
             if done:
+                print(f'time: {ti}')
+                print(f'total reward: {total_reward}')
                 break
 
         total_reward_list.append(total_reward)

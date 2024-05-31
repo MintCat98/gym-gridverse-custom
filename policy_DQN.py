@@ -44,7 +44,7 @@ def compute_td_loss(states, actions, rewards, next_states, is_done, network:nn.M
 
     # select q-values for chosen actions
     predicted_qvalues_for_actions = predicted_qvalues.squeeze(-1) # shape: [batch_size]
-    print(predicted_qvalues_for_actions.shape)
+    #print(predicted_qvalues_for_actions.shape)
     # predicted_qvalues_for_actions = predicted_qvalues[                
     #   range(states.shape[0]), actions
     # ]
