@@ -16,7 +16,7 @@ def get_network(num_states, num_actions) -> nn.Module:
         nn.Linear(128, num_actions), 
     )
 
-def get_action(state, network:nn.Module, epsilon=0.15):
+def get_action(state, network:nn.Module, epsilon=0.30):
     # sample actions with epsilon-greedy policy
 
     state = torch.tensor(state[None], dtype=torch.float32)

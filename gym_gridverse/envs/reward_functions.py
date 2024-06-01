@@ -591,8 +591,12 @@ def reach_address(
     reward = reward_off
     if isinstance(next_state.grid[next_state.agent.position], DeliveryAddress) :
         add = next_state.grid[next_state.agent.position]
-        if add.is_empty == True :
+        if (add.is_empty == True)  :
             reward = reward_off
+        elif (add.is_empty == False) and state.agent.capacity == 0 :
+            reward = reward_off
+        elif (add.is_empty == False) and state.agent.capacity > 0 :
+            reward = reward_on
         else :
             reward = reward_on
     return reward

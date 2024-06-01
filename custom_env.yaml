@@ -27,7 +27,7 @@ transition_functions:
 
 reward_functions:
   - name: living_reward
-    reward: -0.5
+    reward: -10
   - name: drone_env:finish_deliver_reward
   - name : drone_env:reload_reward
     reward_Hub: 200
