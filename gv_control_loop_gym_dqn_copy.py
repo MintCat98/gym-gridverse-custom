@@ -87,7 +87,7 @@ def main(args):
 
     total_reward_list = []
 
-    for ei in range(100,500):
+    for ei in range(200,300):
         print(f'# Episode {ei}')
         #print()
 
@@ -102,7 +102,7 @@ def main(args):
         #print_compact(observation)
         #print()
 
-        time.sleep(spf)
+        #time.sleep(spf)
         for ti in itt.count():
             #print(f'episode: {ei}')
             #print(f'time: {ti}')
@@ -131,7 +131,7 @@ def main(args):
             #print(f'done: {done}')
             #print()
 
-            time.sleep(spf)
+            #time.sleep(spf)
 
             if done:
                 print(f'time: {ti}')

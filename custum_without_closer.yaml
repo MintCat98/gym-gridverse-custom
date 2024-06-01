@@ -1,0 +1,52 @@
+state_space:
+  objects: [ Wall, Floor, Exit, DeliveryHub, DeliveryAddress ]
+  colors: [ NONE, YELLOW ]
+
+action_space:
+  - MOVE_FORWARD
+  - MOVE_BACKWARD
+  - MOVE_LEFT
+  - MOVE_RIGHT
+  - TURN_LEFT
+  - TURN_RIGHT
+  - ACTUATE
+
+observation_space:
+  objects: [ Wall, Floor, Exit, DeliveryHub, DeliveryAddress ]
+  colors: [ NONE, YELLOW ]
+
+reset_function:
+  name: delivery_town
+  shape: [ 9, 9 ]
+
+transition_functions:
+  - name: move_agent
+  - name: turn_agent
+  - name: drone_env:reload_items_from_Hub_transition
+  - name: drone_env:unload_transition
+
+reward_functions:
+  - name: living_reward
+    reward: -10
+  - name: drone_env:finish_deliver_reward
+  - name : drone_env:reload_reward
+    reward_Hub: 200
+  - name : drone_env:terminating_reward
+    reward : 500
+  - name : drone_env:actuate_on_empty
+  - name : drone_env:holding_penalty
+
+  - name : reach_address
+  
+  - name : getting_closer_Hub
+    reward_items_factor : 1.5
+    object_type : DeliveryHub
+    reward_closer: 0.9
+  - name : bump_into_wall
+observation_function:
+  name: partially_occluded
+  area: [ [ -6, 0 ], [-3, 3 ] ]
+
+terminating_function:
+  # Check 1. No more items in the hub / 2. No more item-calls in every delivery address
+  name: drone_env:no_more_Deliverys
