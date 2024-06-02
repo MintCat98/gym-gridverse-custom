@@ -35,13 +35,7 @@ reward_functions:
     reward : 500
   - name : drone_env:actuate_on_empty
   - name : drone_env:holding_penalty
-  
-  - name : getting_closer_Address
-    reward_items_factor : 0.5
-    hub_type : DeliveryHub
-    object_type: DeliveryAddress
-    reward_closer: 0.1
-    reward_further: 0
+
   - name : reach_address
   
   - name : getting_closer_Hub

@@ -447,7 +447,7 @@ class DeliveryAddress(GridObject):
     state_index = 0  # Starts from 0
     color = Color.NONE
     blocks_movement = False  # Because the agent must enter the building.
-    blocks_vision = True  # It is more natural I think.
+    blocks_vision = False  # It is more natural I think.
     holdable = False  # Fixed object
     num_items = 0  # A counter for called items which will be delivered.
 

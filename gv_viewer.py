@@ -166,7 +166,7 @@ def main():
     args.spf = 1 / args.fps
 
     env = factory_env_from_yaml(args.env_path)
-
+    
     print_legend()
 
     state_viewer = GridVerseViewer(env.state_space.grid_shape, caption='State')
@@ -208,7 +208,7 @@ def main():
 
         state_data_builder.append0(state_image)
         observation_data_builder.append0(observation_image)
-
+        
         done, reset = False, False
         record = True  # avoids recording the same episode multiple times
         for _ in itt.count():
