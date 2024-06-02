@@ -5,6 +5,7 @@ import itertools as itt
 import time
 from typing import Dict
 
+import pandas as pd
 import gym
 import numpy as np
 import torch as ch
@@ -71,7 +72,6 @@ def main(args):
     observation = env.reset()
     observation_space = preprocess_observation(observation)
     num_states = observation_space.shape[0]
-
     network = get_network(num_states, env.action_space.n)
     opt = torch.optim.Adam(network.parameters(), lr=1e-4)
 
@@ -86,25 +86,25 @@ def main(args):
 
     total_reward_list = []
 
-    for ei in itt.count():
+    for ei in range(200, 300):
         print(f'# Episode {ei}')
-        print()
+        # print()
 
         total_reward = 0
-        observation, _ = env.reset()
+        observation = preprocess_observation(env.reset())
+
         # what is the actual difference of observation and state, in code?
 
-        env.render()
+        # env.render()
 
-        print('observation:')
-        print_compact(observation)
-        print()
+        # print('observation:')
+        # print_compact(observation)
+        # print()
 
-        time.sleep(spf)
-
+        # time.sleep(spf)
         for ti in itt.count():
-            print(f'episode: {ei}')
-            print(f'time: {ti}')
+            # print(f'episode: {ei}')
+            # print(f'time: {ti}')
 
             # action = env.action_space.sample()
             action = get_action(observation, network)
@@ -119,22 +119,27 @@ def main(args):
 
             total_reward += reward
 
-            env.render()
+            # env.render()
 
-            print(f'total reward: {total_reward}')
-            print(f'action: {action}')
-            print(f'reward: {reward}')
-            print('observation:')
-            print_compact(observation)
-            print(f'done: {done}')
-            print()
+            # print(f'total reward: {total_reward}')
+            # print(f'action: {action}')
+            # print(f'reward: {reward}')
+            # print('observation:')
+            # print_compact(observation)
+            # print(f'done: {done}')
+            # print()
 
-            time.sleep(spf)
+            # time.sleep(spf)
 
             if done:
+                print(f'time: {ti}')
+                print(f'total reward: {total_reward}')
                 break
 
         total_reward_list.append(total_reward)
+
+    df = pd.DataFrame(total_reward_list, columns=['Total Reward'])
+    df.to_csv('total_rewards.csv', index_label='Episode')
     ch.save(network.state_dict(), 'model.pth')
 
 
